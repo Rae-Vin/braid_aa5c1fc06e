@@ -16,11 +16,7 @@ class SymbolicLLM:
 
         # Generate output from Mistral
         response = self.llm(
-            f"### Question:
-{prompt}
-
-### Answer:
-",
+            f"### Question:{prompt}### Answer:",
             max_tokens=200,
             stop=["###"],
             echo=False,
@@ -30,9 +26,7 @@ class SymbolicLLM:
 
         # Score symbolic alignment of the response
         score = self.filter.score_output(output)
-        return f"{output}
-
-🧠 Symbolic alignment score: {score:.2f}"
+        return f"{output}🧠 Symbolic alignment score: {score:.2f}"
 
     def reset_symbolic_memory(self):
         self.filter.reset()
@@ -46,18 +40,15 @@ if __name__ == "__main__":
 
     agent = SymbolicLLM(model_path=args.model)
 
-    print("🔁 Symbolic LLM loop active. Type 'reset' to clear memory. Type 'exit' to quit.
-")
+    print("🔁 Symbolic LLM loop active. Type 'reset' to clear memory. Type 'exit' to quit.")
     while True:
         user_input = input("You: ")
         if user_input.lower() in ["exit", "quit"]:
             break
         if user_input.lower() == "reset":
             agent.reset_symbolic_memory()
-            print("🔄 Symbolic memory reset.
-")
+            print("🔄 Symbolic memory reset.")
             continue
 
         result = agent.ask(user_input)
-        print(f"Agent: {result}
-")
+        print(f"Agent: {result}")

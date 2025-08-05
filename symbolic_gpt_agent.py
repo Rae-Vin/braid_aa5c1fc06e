@@ -26,17 +26,14 @@ class SymbolicAgent:
             return f"❌ Error from OpenAI API: {str(e)}"
 
         score = self.filter.score_output(reply)
-        return f"{reply.strip()}
-
-🧠 Symbolic alignment score: {score:.2f}"
+        return f"{reply.strip()}🧠 Symbolic alignment score: {score:.2f}"
 
     def reset_memory(self):
         self.filter.reset()
 
 if __name__ == "__main__":
     agent = SymbolicAgent()
-    print("🔁 Symbolic Agent Ready. Type 'reset' to clear memory. Type 'exit' to quit.
-")
+    print("🔁 Symbolic Agent Ready. Type 'reset' to clear memory. Type 'exit' to quit.")
 
     while True:
         user_input = input("You: ")
@@ -44,10 +41,8 @@ if __name__ == "__main__":
             break
         if user_input.lower() == "reset":
             agent.reset_memory()
-            print("🔄 Symbolic memory reset.
-")
+            print("🔄 Symbolic memory reset.")
             continue
 
         result = agent.chat(user_input)
-        print(f"Agent: {result}
-")
+        print(f"Agent: {result}")
