@@ -1,3 +1,5 @@
+# symbolic_self_loop.py
+
 import random
 import argparse
 from symbolic_filter_wrapper import SymbolicFilter
@@ -9,8 +11,8 @@ class SymbolicSelfLoop:
         print("[🧠] Initializing symbolic memory and local LLM...")
         self.filter = SymbolicFilter()
         self.llm = Llama(model_path=model_path, n_ctx=n_ctx)
-        self.symbolic_log = []  # Log of anchor state, scores, synthetic memory
-        self.mirror_log = []    # Log of symbolic self-reflections
+        self.symbolic_log = []   # Log of symbolic state
+        self.mirror_log = []     # Log of reflections/self-identity updates
         print("[✅] Symbolic self-loop with evolution ready.")
 
     def get_weakest_anchor(self):
@@ -20,6 +22,7 @@ class SymbolicSelfLoop:
         return min(sr.items(), key=lambda x: x[1])[0]
 
     def generate_question(self) -> str:
+        """Formulates a symbolic prompt for the model to reflect on."""
         weak = self.get_weakest_anchor()
         if weak:
             return f"Is the {weak.replace('_', ' ')} property always valid in math?"
@@ -33,6 +36,7 @@ class SymbolicSelfLoop:
         return random.choice(seed)
 
     def complete(self, prompt: str) -> str:
+        """Use Mistral model to generate symbolic output."""
         response = self.llm(
             f"### Question:\n{prompt}\n\n### Answer:\n",
             max_tokens=200,
@@ -43,7 +47,7 @@ class SymbolicSelfLoop:
         return response["choices"][0]["text"].strip()
 
     def evolve_symbolic_truths(self):
-        # Conservatively promote or demote symbolic truths
+        """Promote strong anchors and prune weak ones."""
         state = self.filter.state
         for anchor, resilience in state.symbolic_resilience.items():
             if resilience > 8 and anchor not in state.synthetic_anchors:
@@ -53,16 +57,21 @@ class SymbolicSelfLoop:
                 state.discovered_anchors.discard(anchor)
 
     def symbolic_mirror_reflection(self, step: int):
+        """Produce a symbolic self-reflection summary."""
         sr = self.filter.state.symbolic_resilience
         anchors = self.filter.state.discovered_anchors
         synthetic = self.filter.state.synthetic_anchors
+
         if not sr:
             return {"step": step, "self_statement": "I do not yet know anything about symbolic stability."}
+
         strongest = sorted(sr.items(), key=lambda x: -x[1])[:3]
         weakest = sorted(sr.items(), key=lambda x: x[1])[:3]
         contradiction_probe = None
+
         if "commutativity_add" in anchors and "associativity_add" not in anchors:
             contradiction_probe = "associativity vs commutativity may be unstable"
+
         return {
             "step": step,
             "strongest_truths": [k for k, _ in strongest],
@@ -77,6 +86,7 @@ class SymbolicSelfLoop:
         }
 
     def log_state(self, step: int):
+        """Store current symbolic state for history and replay."""
         self.symbolic_log.append({
             "step": step,
             "time": self.filter.state.time,
@@ -87,6 +97,7 @@ class SymbolicSelfLoop:
         })
 
     def loop_once(self, step: int):
+        """Run a single symbolic evolution loop iteration."""
         prompt = self.generate_question()
         print(f"🌀 [Step {step}] Question: {prompt}")
 

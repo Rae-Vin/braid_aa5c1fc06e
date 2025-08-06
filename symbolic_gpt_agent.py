@@ -1,3 +1,4 @@
+# symbolic_gpt_agent.py
 
 import openai
 import os
@@ -12,9 +13,11 @@ class SymbolicAgent:
         self.filter = SymbolicFilter()
 
     def chat(self, prompt: str) -> str:
+        # Step 1: Validate prompt against symbolic truths
         if not self.filter.validate_prompt(prompt):
             return "⚠️ Rejected: Input conflicts with symbolic truths."
 
+        # Step 2: Get GPT response
         try:
             response = openai.ChatCompletion.create(
                 model=self.model,
@@ -25,12 +28,15 @@ class SymbolicAgent:
         except Exception as e:
             return f"❌ Error from OpenAI API: {str(e)}"
 
+        # Step 3: Score output symbolically
         score = self.filter.score_output(reply)
-        return f"{reply.strip()}🧠 Symbolic alignment score: {score:.2f}"
+        return f"{reply.strip()} 🧠 Symbolic alignment score: {score:.2f}"
 
     def reset_memory(self):
         self.filter.reset()
 
+
+# Optional CLI Runner
 if __name__ == "__main__":
     agent = SymbolicAgent()
     print("🔁 Symbolic Agent Ready. Type 'reset' to clear memory. Type 'exit' to quit.")

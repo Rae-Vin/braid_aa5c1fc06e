@@ -1,3 +1,4 @@
+# symbolic_filter_wrapper.py
 
 import os
 import pickle
@@ -10,6 +11,7 @@ import uvicorn
 
 from truth_anchors import truth_anchors_scaffold
 from symbolic_braid_simulation import SymbolicState, simulate_step
+
 
 class SymbolicFilter:
     def __init__(self, state_path="braid_state.pkl"):
@@ -29,6 +31,9 @@ class SymbolicFilter:
             pickle.dump(self.state, f)
 
     def validate_prompt(self, prompt: str) -> bool:
+        """
+        Injects the prompt, runs a simulation step, and checks for symbolic anchor growth.
+        """
         original_depth = len(self.state.discovered_anchors)
         simulate_step(self.state, truth_anchors_scaffold, {}, steps=1)
         new_depth = len(self.state.discovered_anchors)
@@ -36,6 +41,9 @@ class SymbolicFilter:
         return new_depth >= original_depth
 
     def score_output(self, output: str) -> float:
+        """
+        Runs a simulation step, then returns average symbolic resilience as a score.
+        """
         simulate_step(self.state, truth_anchors_scaffold, {}, steps=1)
         self._save_state()
         resilience = list(self.state.symbolic_resilience.values())
@@ -47,6 +55,7 @@ class SymbolicFilter:
         self.state = SymbolicState()
         self._save_state()
         print("[SymbolicFilter] Symbolic state has been reset.")
+
 
 # ---------- API MODE ----------
 app = FastAPI()
@@ -74,6 +83,7 @@ def score(input: InputPayload):
 def reset():
     symbolic_filter.reset()
     return {"status": "reset complete"}
+
 
 # ---------- ENTRY ----------
 if __name__ == "__main__":

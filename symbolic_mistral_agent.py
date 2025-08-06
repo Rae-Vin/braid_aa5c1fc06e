@@ -1,3 +1,4 @@
+# symbolic_mistral_agent.py
 
 from llama_cpp import Llama
 from symbolic_filter_wrapper import SymbolicFilter
@@ -26,11 +27,13 @@ class SymbolicLLM:
 
         # Score symbolic alignment of the response
         score = self.filter.score_output(output)
-        return f"{output}🧠 Symbolic alignment score: {score:.2f}"
+        return f"{output} 🧠 Symbolic alignment score: {score:.2f}"
 
     def reset_symbolic_memory(self):
         self.filter.reset()
 
+
+# Optional CLI interaction
 if __name__ == "__main__":
     import argparse
 
