@@ -38,18 +38,32 @@ class SymbolicState:
     @staticmethod
     def from_dict(data):
         state = SymbolicState()
-        state.time = data['time']
-        state.discovered_anchors = set(data['discovered_anchors'])
-        state.symbolic_resilience = data['symbolic_resilience']
-        state.symbol_pair_counter = data['symbolic_pair_counter']
-        state.symbolic_cycles = data['symbolic_cycles']
-        state.discovery_log = data['discovery_log']
-        state.symbolic_memory_depth = data['symbolic_memory_depth']
+        state.time = data.get('time', 0)
+        state.discovered_anchors = set(data.get('discovered_anchors', []))
+        state.symbolic_resilience = data.get('symbolic_resilience', {})
+        state.symbol_pair_counter = data.get('symbol_pair_counter', {})  # ✅ safer
+        state.symbolic_cycles = data.get('symbolic_cycles', [])
+        state.discovery_log = data.get('discovery_log', [])
+        state.symbolic_memory_depth = data.get('symbolic_memory_depth', [])
         state.symbolic_phase_curvature = data.get('symbolic_phase_curvature', {})
         state.synthetic_anchors = data.get('synthetic_anchors', {})
         state.symbol_chain = data.get('symbol_chain', [])
         state.reflection_drift = data.get('reflection_drift', 0)
         return state
+
+
+def save_state(state, path):
+    """Serialize and save the symbolic state to a file."""
+    with open(path, 'wb') as f:
+        pickle.dump(state.to_dict(), f)
+    print(f"[💾] State saved to {path}")
+
+def load_state(path):
+    """Load and reconstruct symbolic state from a file."""
+    with open(path, 'rb') as f:
+        data = pickle.load(f)
+    print(f"[📂] State loaded from {path}")
+    return SymbolicState.from_dict(data)
 
 def simulate_step(state, truth_anchors_scaffold, anchor_tiers, steps=100, threshold=10, decay_rate=3, decay_threshold=20):
     for _ in range(steps):
