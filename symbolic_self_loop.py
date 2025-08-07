@@ -16,7 +16,7 @@ class SymbolicSelfLoop:
         print("[✅] Symbolic self-loop with evolution ready.")
 
     def get_weakest_anchor(self):
-        sr = self.filter.state.symbolic_resilience
+        sr = self.filter.state.get("symbolic_resilience", {})
         if not sr:
             return None
         return min(sr.items(), key=lambda x: x[1])[0]

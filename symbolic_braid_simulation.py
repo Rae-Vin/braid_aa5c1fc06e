@@ -1,5 +1,3 @@
-# symbolic_braid_simulation.py
-
 import random
 import pickle
 import numpy as np
@@ -54,14 +52,12 @@ class SymbolicState:
 
 
 def save_state(state, path):
-    """Serialize and save the symbolic state to a file."""
     with open(path, "wb") as f:
         pickle.dump(state.to_dict(), f)
     print(f"[💾] State saved to {path}")
 
 
 def load_state(path):
-    """Load and reconstruct symbolic state from a file."""
     with open(path, "rb") as f:
         data = pickle.load(f)
     print(f"[📂] State loaded from {path}")
@@ -81,7 +77,6 @@ def simulate_step(
         successful = 0
         recent_hits = set()
 
-        # Mutation + validation loop
         for _ in range(10):
             anchor = random.choice(list(truth_anchors_scaffold.keys()))
             fn = truth_anchors_scaffold[anchor]
@@ -99,7 +94,6 @@ def simulate_step(
 
             if result:
                 recent_hits.add(anchor)
-                successful += 1
                 state.symbolic_resilience[anchor] = state.symbolic_resilience.get(anchor, 0) + 1
                 state.symbolic_phase_curvature[anchor] = max(0, state.symbolic_phase_curvature.get(anchor, 0) - 0.5)
 
@@ -111,7 +105,6 @@ def simulate_step(
                         "tier": tier
                     })
 
-                # Symbolic cycle detection
                 for other in state.discovered_anchors:
                     if other != anchor:
                         pair = tuple(sorted((anchor, other)))
@@ -122,7 +115,6 @@ def simulate_step(
                                 "cycle_detected_at": state.time
                             })
 
-        # Memory decay & anchor mortality
         for anchor in list(state.symbolic_resilience.keys()):
             if anchor not in recent_hits:
                 state.symbolic_resilience[anchor] -= decay_rate
@@ -131,12 +123,13 @@ def simulate_step(
                     del state.symbolic_resilience[anchor]
                     state.symbol_chain.append((anchor, anchor))  # symbolic death signature
 
-        # Track symbolic memory depth
         if successful > 0:
-            depth = (state.symbolic_memory_depth[-1] if state.symbolic_memory_depth else 0) + successful
+            prev_depth = state.symbolic_memory_depth[-1] if state.symbolic_memory_depth else 0
+            depth = prev_depth + successful
         else:
             decay = random.randint(0, 2)
-            depth = max(0, (state.symbolic_memory_depth[-1] if state.symbolic_memory_depth else 0) - decay)
+            prev_depth = state.symbolic_memory_depth[-1] if state.symbolic_memory_depth else 0
+            depth = max(0, prev_depth - decay)
 
         state.symbolic_memory_depth.append(depth)
         state.time += 1

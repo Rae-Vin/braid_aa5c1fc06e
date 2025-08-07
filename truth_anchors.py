@@ -80,7 +80,7 @@ def observe_environment(state, environment, scaffold):
                     sample = stream[:args]
                     result = fn(*sample)
                     if result:
-                        state.symbolic_resilience[anchor] = state.symbolic_resilience.get(anchor, 0) + 1
+                        state["symbolic_resilience"][anchor] = state.get("symbolic_resilience", {}).get(anchor, 0) + 1
                         state.discovered_anchors.add(anchor)
                         state.discovery_log.append({"time": state.time, "anchor": anchor})
                         aligned[anchor] = aligned.get(anchor, 0) + 1

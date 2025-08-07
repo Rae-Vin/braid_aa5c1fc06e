@@ -9,7 +9,6 @@ from language_fusion import fuse_with_llm
 import os
 import json
 
-MODEL_PATH = "models/mistral-7b-instruct-v0.2.Q4_K_M.gguf"
 RUN_DIR = "braid_pipeline_logs"
 STEPS = 1000
 CLUSTER_K = 5

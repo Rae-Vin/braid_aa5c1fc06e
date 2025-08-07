@@ -30,20 +30,36 @@ class SymbolicFilter:
         with open(self.state_path, 'wb') as f:
             pickle.dump(self.state, f)
 
-    def validate_prompt(self, prompt: str) -> bool:
+    def simulate_symbolic_response(self, prompt: str):
         """
-        Injects the prompt, runs a simulation step, and checks for symbolic anchor growth.
+        Simulates the symbolic output of a prompt to evaluate its impact on anchor growth.
+        This creates a temporary state for evaluation purposes without modifying the actual state.
         """
-        original_depth = len(self.state.discovered_anchors)
-        simulate_step(self.state, truth_anchors_scaffold, {}, steps=1)
-        new_depth = len(self.state.discovered_anchors)
-        self._save_state()
-        return new_depth >= original_depth
+        import copy
+        simulated_state = copy.deepcopy(self.state)
+        simulate_step(simulated_state, truth_anchors_scaffold, {"user_prompt": prompt}, steps=1)
+        return simulated_state
+
+    def validate_prompt(self, prompt):
+        """Validate if the generated prompt introduces novelty."""
+        if not prompt:
+            return False
+
+        try:
+            original_depth = len(self.state.get("discovered_anchors", {}))
+        except Exception as e:
+            print(f"⚠️ Error accessing discovered_anchors: {e}")
+            return False
+
+        simulated = self.simulate_symbolic_response(prompt)
+        new_depth = len(simulated.get("discovered_anchors", {}))
+
+        delta = new_depth - original_depth
+        print(f"📈 Prompt validation: symbolic delta = {delta}")
+        return delta > 0
 
     def score_output(self, output: str) -> float:
-        """
-        Runs a simulation step, then returns average symbolic resilience as a score.
-        """
+        """Runs a simulation step, then returns average symbolic resilience as a score."""
         simulate_step(self.state, truth_anchors_scaffold, {}, steps=1)
         self._save_state()
         resilience = list(self.state.symbolic_resilience.values())
